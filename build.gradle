@@ -1,0 +1,104 @@
+plugins {
+    id 'com.palantir.docker' version '0.25.0'
+    id 'com.github.harbby.gradle.serviceloader' version '1.1.5'
+    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}"
+    id 'application'
+}
+
+group = 'com.exactpro.th2'
+version = release_version
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "11"
+}
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "11"
+}
+
+repositories {
+    mavenCentral()
+
+    maven {
+        name 'Sonatype_snapshots'
+        url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+    }
+
+    maven {
+        name 'Sonatype_releases'
+        url 'https://s01.oss.sonatype.org/content/repositories/releases/'
+    }
+
+    mavenLocal()
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+        resolutionStrategy.cacheDynamicVersionsFor 0, 'seconds'
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Created-By': "${System.getProperty('java.version')} (${System.getProperty('java.vendor')})",
+                'Specification-Title': '',
+                'Specification-Vendor': 'Exactpro Systems LLC',
+                'Implementation-Title': project.archivesBaseName,
+                'Implementation-Vendor': 'Exactpro Systems LLC',
+                'Implementation-Vendor-Id': 'com.exactpro',
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+dependencies {
+    api platform('com.exactpro.th2:bom:3.0.0')
+
+    implementation 'com.exactpro.th2:common:3.32.1'
+    implementation 'com.exactpro.th2:codec:4.4.0'
+
+    implementation 'org.slf4j:slf4j-log4j12'
+    implementation 'org.slf4j:slf4j-api'
+
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '1.7.9'
+    implementation group: 'io.fixprotocol.orchestra', name: 'repository-quickfix', version: '1.6.8'
+    implementation group: 'io.fixprotocol.orchestra', name: 'model-quickfix', version: '1.6.8'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:2.3.2'
+    implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1'
+    implementation group: 'javax.activation', name: 'activation', version: '1.1.1'
+    implementation group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.1'
+
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+}
+
+application {
+    mainClassName 'com.exactpro.th2.codec.MainKt'
+}
+
+applicationName = 'service'
+
+distTar {
+    archiveName "${applicationName}.tar"
+}
+
+dockerPrepare {
+    dependsOn distTar
+}
+
+docker {
+    copySpec.from(tarTree("$buildDir/distributions/${applicationName}.tar"))
+}
+
+serviceLoader {
+    serviceInterface 'com.exactpro.th2.codec.api.IPipelineCodecFactory'
+}
+
+test {
+    useJUnitPlatform()
+}
