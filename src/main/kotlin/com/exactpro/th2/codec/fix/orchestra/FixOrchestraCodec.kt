@@ -33,6 +33,7 @@ import com.exactpro.th2.common.message.plusAssign
 import com.exactpro.th2.common.message.toJson
 import com.exactpro.th2.common.schema.dictionary.DictionaryType.MAIN
 import com.google.protobuf.ByteString
+import io.fixprotocol._2020.orchestra.repository.Repository
 import io.fixprotocol.orchestra.message.TestException
 import io.fixprotocol.orchestra.model.SymbolResolver
 import io.fixprotocol.orchestra.model.quickfix.QuickfixValidator
@@ -46,12 +47,11 @@ import quickfix.Message as QuickfixMessage
 
 class FixOrchestraCodec(
     private val settings: FixOrchestraCodecSettings,
-    context: IPipelineCodecContext,
+    private val dictionary: DataDictionary,
+    repository: Repository,
 ) : IPipelineCodec {
     private val logger = KotlinLogging.logger {}
 
-    private val dictionary = context[MAIN].use(QfjDictionaryLoader::load).inputStream().use(::DataDictionary)
-    private val repository = context[MAIN].loadRepository()
     private val accessor = RepositoryAccessor(repository)
     private val validator = QuickfixValidator(accessor, SymbolResolver())
 

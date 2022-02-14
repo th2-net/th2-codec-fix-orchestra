@@ -19,23 +19,44 @@ package com.exactpro.th2.codec.fix.orchestra
 import com.exactpro.th2.codec.api.IPipelineCodecContext
 import com.exactpro.th2.codec.api.IPipelineCodecFactory
 import com.exactpro.th2.codec.api.IPipelineCodecSettings
+import com.exactpro.th2.codec.fix.orchestra.util.loadRepository
+import com.exactpro.th2.common.schema.dictionary.DictionaryType
+import io.fixprotocol._2020.orchestra.repository.Repository
+import mu.KotlinLogging
+import quickfix.DataDictionary
+import java.io.File
+import java.nio.file.Files
 
 class FixOrchestraCodecFactory : IPipelineCodecFactory {
-    private lateinit var context: IPipelineCodecContext
+    private lateinit var qfjDictionaryPath: File
+    private lateinit var dictionary: DataDictionary
+    private lateinit var repository: Repository
 
     override val settingsClass: Class<out IPipelineCodecSettings> = FixOrchestraCodecSettings::class.java
     override val protocol: String = PROTOCOL
 
     override fun init(context: IPipelineCodecContext) {
-        this.context = context
+        qfjDictionaryPath = Files.createTempDirectory("qfj-dictionary").toFile()
+        dictionary = context[DictionaryType.MAIN].use { QfjDictionaryLoader.load(it, qfjDictionaryPath) }.inputStream().use(::DataDictionary)
+        repository = context[DictionaryType.MAIN].loadRepository()
     }
 
     override fun create(settings: IPipelineCodecSettings?) = FixOrchestraCodec(
-        requireNotNull(settings as? FixOrchestraCodecSettings) { "settings are not an instance of ${FixOrchestraCodec::class.qualifiedName}" },
-        context
+        requireNotNull(settings as? FixOrchestraCodecSettings) { "settings are not an instance of ${FixOrchestraCodecSettings::class.qualifiedName}" },
+        dictionary,
+        repository
     )
+
+    override fun close() {
+        if (::qfjDictionaryPath.isInitialized) {
+            LOGGER.info { "Clearing the tmp directory $qfjDictionaryPath" }
+            qfjDictionaryPath.deleteRecursively()
+            LOGGER.info { "Directory cleaned" }
+        }
+    }
 
     companion object {
         const val PROTOCOL = "FIX"
+        private val LOGGER = KotlinLogging.logger { }
     }
 }

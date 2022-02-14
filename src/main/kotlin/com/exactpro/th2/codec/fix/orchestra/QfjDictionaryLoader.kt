@@ -17,11 +17,11 @@
 package com.exactpro.th2.codec.fix.orchestra
 
 import io.fixprotocol.orchestra.quickfix.DataDictionaryGenerator
+import mu.KotlinLogging
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import java.io.File
 import java.io.InputStream
-import java.nio.file.Files
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
@@ -30,13 +30,18 @@ import javax.xml.transform.stream.StreamResult
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
+private val LOGGER = KotlinLogging.logger { }
+
 object QfjDictionaryLoader {
-    fun load(source: InputStream): File {
-        val tempDirectory = Files.createTempDirectory("qfj-dictionary").toFile()
+    fun load(source: InputStream, destDir: File): File {
+        LOGGER.info { "Generating QFJ dictionaries in $destDir directory" }
 
-        DataDictionaryGenerator().generate(source, tempDirectory)
+        DataDictionaryGenerator().generate(source, destDir)
 
-        val dictionaryFile = tempDirectory.walk().single(File::isFile)
+        val dictionaryFile = destDir.walk().single(File::isFile)
+
+        LOGGER.info { "Dictionary generated: $dictionaryFile" }
+
         val dictionary = dictionaryFile.loadXml()
 
         val header = dictionary["/fix/header"]
