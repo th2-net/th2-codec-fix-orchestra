@@ -33,7 +33,9 @@ class FixOrchestraCodecFactory : IPipelineCodecFactory {
     private lateinit var repository: Repository
 
     override val settingsClass: Class<out IPipelineCodecSettings> = FixOrchestraCodecSettings::class.java
-    override val protocol: String = PROTOCOL
+    override val protocol: String
+        get() = PROTOCOL
+    override val protocols: Set<String> = setOf(PROTOCOL)
 
     override fun init(context: IPipelineCodecContext) {
         qfjDictionaryPath = Files.createTempDirectory("qfj-dictionary").toFile()

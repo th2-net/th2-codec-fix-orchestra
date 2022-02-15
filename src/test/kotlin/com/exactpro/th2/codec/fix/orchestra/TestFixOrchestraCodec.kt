@@ -16,22 +16,37 @@
 
 package com.exactpro.th2.codec.fix.orchestra
 
+import com.exactpro.th2.codec.api.DictionaryAlias
+import com.exactpro.th2.codec.api.IPipelineCodecContext
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.message.messageType
+import com.exactpro.th2.common.schema.dictionary.DictionaryType
 import com.google.protobuf.ByteString
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.io.InputStream
 
 class TestFixOrchestraCodec {
     private val factory = FixOrchestraCodecFactory().apply {
-        init {
-            checkNotNull(TestFixOrchestraCodec::class.java.classLoader.getResourceAsStream("dict/mit_2016.xml")) {
-                "cannot find dictionary"
+        init(object : IPipelineCodecContext {
+
+            override fun get(alias: DictionaryAlias): InputStream {
+                TODO("Not yet implemented")
             }
-        }
+
+            override fun get(type: DictionaryType): InputStream {
+                return checkNotNull(TestFixOrchestraCodec::class.java.classLoader.getResourceAsStream("dict/mit_2016.xml")) {
+                    "cannot find dictionary"
+                }
+            }
+
+            override fun getDictionaryAliases(): Set<String> {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
     @AfterEach
