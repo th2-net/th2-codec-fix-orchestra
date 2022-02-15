@@ -4,7 +4,9 @@ This microservice can encode, decode and validate FIX messages using FIX Orchest
 
 ## Configuration
 
-+ *defaultScenario* - default scenario for message validation (`base` by default)
++ **defaultScenario** - default scenario for message validation (`base` by default)
++ **encodeErrorAsWaring** - message validation errors during encoding will be reported as warnings (`false` by default)
++ **decodeErrorAsWaring** - message validation errors during decoding will be reported as warnings (`false` by default) 
 
 ## Protocol
 

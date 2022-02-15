@@ -17,7 +17,7 @@
 package com.exactpro.th2.codec.fix.orchestra
 
 import com.exactpro.th2.codec.api.IPipelineCodec
-import com.exactpro.th2.codec.api.IPipelineCodecContext
+import com.exactpro.th2.codec.api.IReportingContext
 import com.exactpro.th2.codec.fix.orchestra.FixOrchestraCodecFactory.Companion.PROTOCOL
 import com.exactpro.th2.codec.fix.orchestra.util.FixMessage
 import com.exactpro.th2.codec.fix.orchestra.util.beginString
@@ -25,13 +25,11 @@ import com.exactpro.th2.codec.fix.orchestra.util.decode
 import com.exactpro.th2.codec.fix.orchestra.util.details
 import com.exactpro.th2.codec.fix.orchestra.util.encode
 import com.exactpro.th2.codec.fix.orchestra.util.loadMessageStructures
-import com.exactpro.th2.codec.fix.orchestra.util.loadRepository
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.message.plusAssign
 import com.exactpro.th2.common.message.toJson
-import com.exactpro.th2.common.schema.dictionary.DictionaryType.MAIN
 import com.google.protobuf.ByteString
 import io.fixprotocol._2020.orchestra.repository.Repository
 import io.fixprotocol.orchestra.message.TestException
@@ -64,7 +62,9 @@ class FixOrchestraCodec(
         CharsetSupport.setCharset(UTF_8.toString())
     }
 
-    override fun encode(messageGroup: MessageGroup): MessageGroup {
+    override fun encode(messageGroup: MessageGroup): MessageGroup = throw UnsupportedOperationException("use encode with context instead")
+
+    override fun encode(messageGroup: MessageGroup, context: IReportingContext): MessageGroup {
         val messages = messageGroup.messagesList
 
         if (messages.isEmpty()) {
@@ -91,7 +91,9 @@ class FixOrchestraCodec(
 
             val name = parsed.messageType
             val structure = requireNotNull(structuresByName[name]) { "Unknown message type: $name " }
-            var (result, errors) = structure.encode(parsed, beginString)
+            val errors = if (settings.encodeErrorAsWaring) ContextHolder(context) else ListHolder()
+            val (result, encodeErrors) = structure.encode(parsed, beginString)
+            errors += encodeErrors
             val metadata = parsed.metadata
 
             try {
@@ -106,7 +108,7 @@ class FixOrchestraCodec(
                 errors += "Encoded message validation error: ${e.message}"
             }
 
-            if(errors.isNotEmpty()) {
+            if(errors.hasErrors) {
                 error("Failed to encode message due to following errors:\n${errors.joinToString("\n") { " - $it" }}")
             }
 
@@ -125,7 +127,9 @@ class FixOrchestraCodec(
         return builder.build()
     }
 
-    override fun decode(messageGroup: MessageGroup): MessageGroup {
+    override fun decode(messageGroup: MessageGroup): MessageGroup = throw UnsupportedOperationException("use decode with context instead")
+
+    override fun decode(messageGroup: MessageGroup, context: IReportingContext): MessageGroup {
         val messages = messageGroup.messagesList
 
         if (messages.isEmpty()) {
@@ -159,7 +163,7 @@ class FixOrchestraCodec(
             val messageType = quickfixMessage.header.getString(MsgType.FIELD)
             val structure = requireNotNull(structuresByType[messageType]) { "Unknown message type: $messageType" }
             val metadata = raw.metadata
-            val errors = mutableListOf<String>()
+            val errors = if (settings.decodeErrorAsWaring) ContextHolder(context) else ListHolder()
 
             try {
                 val scenario = metadata.getPropertiesOrDefault(SCENARIO_PROPERTY, settings.defaultScenario)
@@ -174,7 +178,7 @@ class FixOrchestraCodec(
 
             val result = structure.decode(quickfixMessage).apply { errors += this.errors }.message
 
-            if(errors.isNotEmpty()) {
+            if(errors.hasErrors) {
                 error("Failed to decode message due to following errors:\n${errors.joinToString("\n") { " - $it" }}")
             }
 
@@ -190,6 +194,37 @@ class FixOrchestraCodec(
         }
 
         return builder.build()
+    }
+
+    private interface ErrorHolder : Iterable<String> {
+        operator fun plusAssign(message: String)
+        operator fun plusAssign(messages: Collection<String>)
+        val hasErrors: Boolean
+    }
+
+    private class ListHolder : ErrorHolder {
+        private val _errors = mutableListOf<String>()
+        override fun plusAssign(message: String) {
+            _errors += message
+        }
+        override fun plusAssign(messages: Collection<String>) {
+            _errors += messages
+        }
+        override val hasErrors: Boolean
+            get() = _errors.isNotEmpty()
+
+        override fun iterator(): Iterator<String> = _errors.iterator()
+    }
+
+    private class ContextHolder(private val context: IReportingContext) : ErrorHolder {
+        override fun plusAssign(message: String): Unit = context.warning(message)
+
+        override fun plusAssign(messages: Collection<String>): Unit = context.warnings(messages)
+
+        override val hasErrors: Boolean
+            get() = false
+
+        override fun iterator(): Iterator<String> = emptyList<String>().iterator()
     }
 
     companion object {

@@ -18,4 +18,8 @@ package com.exactpro.th2.codec.fix.orchestra
 
 import com.exactpro.th2.codec.api.IPipelineCodecSettings
 
-data class FixOrchestraCodecSettings(val defaultScenario: String = "base") : IPipelineCodecSettings
+data class FixOrchestraCodecSettings(
+    val defaultScenario: String = "base",
+    val encodeErrorAsWaring: Boolean = false,
+    val decodeErrorAsWaring: Boolean = false,
+) : IPipelineCodecSettings

@@ -18,6 +18,7 @@ package com.exactpro.th2.codec.fix.orchestra
 
 import com.exactpro.th2.codec.api.DictionaryAlias
 import com.exactpro.th2.codec.api.IPipelineCodecContext
+import com.exactpro.th2.codec.api.impl.ReportingContext
 import com.exactpro.th2.common.grpc.AnyMessage
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
@@ -69,7 +70,8 @@ class TestFixOrchestraCodec {
                         )
                         .build()
                 )
-                .build()
+                .build(),
+            ReportingContext()
         )
         val anyMessage = result.messagesList.single()
         Assertions.assertTrue(anyMessage.hasMessage()) { "message does not have parsed message: $anyMessage" }
@@ -92,7 +94,8 @@ class TestFixOrchestraCodec {
                         )
                         .build()
                 )
-                .build()
+                .build(),
+            ReportingContext()
         )
         val anyMessage = result.messagesList.single()
         Assertions.assertTrue(anyMessage.hasMessage()) { "message does not have parsed message: $anyMessage" }
