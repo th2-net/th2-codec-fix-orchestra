@@ -25,8 +25,10 @@ import com.exactpro.th2.codec.fix.orchestra.util.decode
 import com.exactpro.th2.codec.fix.orchestra.util.details
 import com.exactpro.th2.codec.fix.orchestra.util.encode
 import com.exactpro.th2.codec.fix.orchestra.util.loadMessageStructures
+import com.exactpro.th2.common.grpc.Direction
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
+import com.exactpro.th2.common.message.direction
 import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.message.plusAssign
 import com.exactpro.th2.common.message.toJson
@@ -163,7 +165,7 @@ class FixOrchestraCodec(
             val messageType = quickfixMessage.header.getString(MsgType.FIELD)
             val structure = requireNotNull(structuresByType[messageType]) { "Unknown message type: $messageType" }
             val metadata = raw.metadata
-            val errors = if (settings.decodeErrorAsWaring) ContextHolder(context) else ListHolder()
+            val errors = if (settings.decodeErrorAsWaring || (settings.encodeErrorAsWaring && raw.wasSentByTh2)) ContextHolder(context) else ListHolder()
 
             try {
                 val scenario = metadata.getPropertiesOrDefault(SCENARIO_PROPERTY, settings.defaultScenario)
@@ -229,5 +231,8 @@ class FixOrchestraCodec(
 
     companion object {
         private const val SCENARIO_PROPERTY = "scenario"
+
+        private val RawMessage.wasSentByTh2: Boolean
+            get() = hasParentEventId() && direction == Direction.SECOND
     }
 }
