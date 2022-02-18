@@ -165,7 +165,11 @@ class FixOrchestraCodec(
             val messageType = quickfixMessage.header.getString(MsgType.FIELD)
             val structure = requireNotNull(structuresByType[messageType]) { "Unknown message type: $messageType" }
             val metadata = raw.metadata
-            val errors = if (settings.decodeErrorAsWaring || (settings.encodeErrorAsWaring && raw.wasSentByTh2)) ContextHolder(context) else ListHolder()
+            val errors = when {
+                settings.encodeErrorAsWaring && raw.wasSentByTh2 -> DummyHolder()
+                settings.decodeErrorAsWaring -> ContextHolder(context)
+                else -> ListHolder()
+            }
 
             try {
                 val scenario = metadata.getPropertiesOrDefault(SCENARIO_PROPERTY, settings.defaultScenario)
@@ -204,6 +208,22 @@ class FixOrchestraCodec(
         val hasErrors: Boolean
     }
 
+    private class DummyHolder : ErrorHolder {
+        override fun plusAssign(message: String) {
+            LOGGER.warn { "A waring was reported: $message" }
+        }
+
+        override fun plusAssign(messages: Collection<String>) {
+            LOGGER.warn { "${messages.size} warning(s) were reported: ${messages.joinToString("; ")}" }
+        }
+
+        override val hasErrors: Boolean
+            get() = false
+
+        override fun iterator(): Iterator<String> = emptyList<String>().iterator()
+
+    }
+
     private class ListHolder : ErrorHolder {
         private val _errors = mutableListOf<String>()
         override fun plusAssign(message: String) {
@@ -231,6 +251,7 @@ class FixOrchestraCodec(
 
     companion object {
         private const val SCENARIO_PROPERTY = "scenario"
+        private val LOGGER = KotlinLogging.logger { }
 
         private val RawMessage.wasSentByTh2: Boolean
             get() = hasParentEventId() && direction == Direction.SECOND

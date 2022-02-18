@@ -25,11 +25,14 @@ import com.exactpro.th2.common.grpc.RawMessage
 import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.schema.dictionary.DictionaryType
 import com.google.protobuf.ByteString
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.io.InputStream
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestFixOrchestraCodec {
     private val factory = FixOrchestraCodecFactory().apply {
         init(object : IPipelineCodecContext {
@@ -50,7 +53,7 @@ class TestFixOrchestraCodec {
         })
     }
 
-    @AfterEach
+    @AfterAll
     fun tearDown() {
         factory.close()
     }
