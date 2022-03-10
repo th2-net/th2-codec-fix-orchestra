@@ -102,22 +102,30 @@ fun Repository.toField(reference: FieldRefType): FixField {
     )
 }
 
-fun Repository.toField(reference: ComponentRefType): FixField {
+fun Repository.toField(reference: ComponentRefType, inlineComponents: Boolean): Collection<FixField> {
     val component = COMPONENTS.computeIfAbsent(reference.id) { id ->
         components.component.single { id == it.id }
     }
 
-    val fields = toFieldMap(component.componentRefOrGroupRefOrFieldRef)
+    val ignoreInline = component.run { name == HEADER_COMPONENT || name == TRAILER_COMPONENT }
 
-    return FixField(
-        name = component.name,
-        isRequired = reference.presence == REQUIRED && fields.values.any(FixField::isRequired),
-        isComponent = true,
-        fields = fields
-    )
+    val fields = toFieldMap(component.componentRefOrGroupRefOrFieldRef, inlineComponents)
+
+    return if (inlineComponents && !ignoreInline) {
+        fields.values
+    } else {
+        listOf(
+            FixField(
+                name = component.name,
+                isRequired = reference.presence == REQUIRED && fields.values.any(FixField::isRequired),
+                isComponent = true,
+                fields = fields
+            )
+        )
+    }
 }
 
-fun Repository.toField(reference: GroupRefType): FixField {
+fun Repository.toField(reference: GroupRefType, inlineComponents: Boolean): FixField {
     val group = GROUPS.computeIfAbsent(reference.id) { id ->
         groups.group.single { id == it.id }
     }
@@ -131,8 +139,11 @@ fun Repository.toField(reference: GroupRefType): FixField {
         tag = counter.id.toInt(),
         isRequired = reference.presence == REQUIRED,
         isGroup = true,
-        fields = toFieldMap(group.componentRefOrGroupRefOrFieldRef)
+        fields = toFieldMap(group.componentRefOrGroupRefOrFieldRef, inlineComponents)
     )
+    if (inlineComponents) {
+        return field
+    }
 
     return FixField(
         name = group.name,
@@ -142,20 +153,20 @@ fun Repository.toField(reference: GroupRefType): FixField {
     )
 }
 
-fun Repository.toField(value: Any): FixField = when (value) {
-    is FieldRefType -> toField(value)
-    is GroupRefType -> toField(value)
-    is ComponentRefType -> toField(value)
+fun Repository.toField(value: Any, inlineComponents: Boolean): Collection<FixField> = when (value) {
+    is FieldRefType -> listOf(toField(value))
+    is GroupRefType -> listOf(toField(value, inlineComponents))
+    is ComponentRefType -> toField(value, inlineComponents)
     else -> error("Cannot convert to field: $this")
 }
 
-fun Repository.toFieldMap(references: List<Any>): Map<String, FixField> {
+fun Repository.toFieldMap(references: List<Any>, inlineComponents: Boolean): Map<String, FixField> {
     return references.asSequence()
-        .map(::toField)
+        .flatMap { toField(it, inlineComponents) }
         .associateBy(FixField::name)
 }
 
-fun Repository.loadMessageStructures(): Map<String, FixMessage> {
+fun Repository.loadMessageStructures(inlineComponents: Boolean): Map<String, FixMessage> {
     val messageFields = HashMap<String, MutableMap<String, FixField>>()
 
     messages.message.forEach { message ->
@@ -163,7 +174,8 @@ fun Repository.loadMessageStructures(): Map<String, FixMessage> {
 
         message.structure
             .componentRefOrGroupRefOrFieldRef
-            .map(::toField)
+            .asSequence()
+            .flatMap { toField(it, inlineComponents) }
             .associateByTo(fields, FixField::name)
     }
 
