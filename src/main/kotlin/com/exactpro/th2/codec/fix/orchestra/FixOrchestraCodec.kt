@@ -55,7 +55,7 @@ class FixOrchestraCodec(
     private val accessor = RepositoryAccessor(repository)
     private val validator = QuickfixValidator(accessor, SymbolResolver())
 
-    private val structuresByName = repository.loadMessageStructures()
+    private val structuresByName = repository.loadMessageStructures(settings.inlineComponents)
     private val structuresByType = structuresByName.values.associateBy(FixMessage::type)
 
     private val beginString = repository.beginString

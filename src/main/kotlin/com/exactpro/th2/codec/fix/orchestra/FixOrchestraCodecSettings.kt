@@ -22,4 +22,5 @@ data class FixOrchestraCodecSettings(
     val defaultScenario: String = "base",
     val encodeErrorAsWaring: Boolean = false,
     val decodeErrorAsWaring: Boolean = false,
+    val inlineComponents: Boolean = false,
 ) : IPipelineCodecSettings

@@ -25,6 +25,7 @@ import com.exactpro.th2.common.grpc.Value.KindCase.SIMPLE_VALUE
 import com.exactpro.th2.common.value.getMessage
 import quickfix.FieldMap
 import quickfix.Group
+import quickfix.UtcTimestampPrecision
 import quickfix.field.BeginString
 import quickfix.field.MsgType
 import quickfix.field.converter.BooleanConverter
@@ -154,16 +155,34 @@ private fun FixField.encodeField(
         "UTCTimeOnly" -> {
             value.runCatching(LocalTime::parse)
                 .recoverCatching { UtcTimeOnlyConverter.convertToLocalTime(value) }
-                .onSuccess { target.setUtcTimeOnly(tag, it) }
+                .onSuccess { target.setUtcTimeOnly(tag, it, it.calculateTimeOnlyPrecision()) }
                 .onFailure { errors += "Invalid time-only value '$value' at: $path.$name" }
         }
         "UTCTimestamp" -> {
             value.runCatching(LocalDateTime::parse)
                 .recoverCatching { UtcTimestampConverter.convertToLocalDateTime(value) }
-                .onSuccess { target.setUtcTimeStamp(tag, it) }
+                .onSuccess { target.setUtcTimeStamp(tag, it, it.calculateTimestampPrecision()) }
                 .onFailure { errors += "Invalid date-time value '$value' at: $path.$name" }
         }
         else -> target.setString(tag, value)
+    }
+}
+
+private fun LocalTime.calculateTimeOnlyPrecision(): UtcTimestampPrecision {
+    return calculateTimePrecision(nano)
+}
+
+private fun LocalDateTime.calculateTimestampPrecision(): UtcTimestampPrecision {
+    return calculateTimePrecision(nano)
+}
+
+private fun calculateTimePrecision(nanos: Int): UtcTimestampPrecision {
+    return when (nanos) {
+        0 -> UtcTimestampPrecision.SECONDS
+        in 1..999 -> UtcTimestampPrecision.NANOS
+        in 1_000..999_999 -> UtcTimestampPrecision.MICROS
+        in 1_000_000..999_999_999 -> UtcTimestampPrecision.MILLIS
+        else -> error("nanos part is negative")
     }
 }
 
