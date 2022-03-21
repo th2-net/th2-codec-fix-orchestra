@@ -3,7 +3,8 @@
 FIX Orchestra codec uses [th2-codec](https://github.com/th2-net/th2-codec) as a core part.
 Please, read more about core part functionality [here](https://github.com/th2-net/th2-codec/blob/master/README.md).
 
-This component can encode and decode FIX messages with validation using FIX Orchestra schema.
+This component can encode and decode FIX messages using FIX Orchestra schema.
+It also performs validation according to FIX Orchestra schema during encoding and decoding.
 FIX Orchestra is a format for machine-readable rules of engagement between counterparties.
 You can read more about it [here](https://github.com/FIXTradingCommunity/fix-orchestra-spec/blob/master/v1-0-STANDARD/orchestra_spec.md).
 
