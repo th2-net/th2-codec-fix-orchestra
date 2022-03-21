@@ -250,7 +250,7 @@ class FixOrchestraCodec(
     }
 
     companion object {
-        private const val SCENARIO_PROPERTY = "scenario"
+        private const val SCENARIO_PROPERTY = "th2.codec.orchestra.scenario"
         private val LOGGER = KotlinLogging.logger { }
 
         private val RawMessage.wasSentByTh2: Boolean
