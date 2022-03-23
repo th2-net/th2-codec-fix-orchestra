@@ -6,7 +6,12 @@ Please, read more about core part functionality [here](https://github.com/th2-ne
 This component can encode and decode FIX messages using FIX Orchestra schema.
 It also performs validation according to FIX Orchestra schema during encoding and decoding.
 FIX Orchestra is a format for machine-readable rules of engagement between counterparties.
-You can read more about it [here](https://github.com/FIXTradingCommunity/fix-orchestra-spec/blob/master/v1-0-STANDARD/orchestra_spec.md).
+Unlike other formats for describing messages in FIX protocol (e.g. QuickFIXJ) it allows you to define the additional information such as:
++ Message structure by each scenario, implemented as an extension of FIX Repository
++ Accepted values of enumerations by message scenario
++ Express a condition such as for a conditionally required field using a Domain Specific Language (DSL)
+
+You can read more about the FIX Orchestra [here](https://github.com/FIXTradingCommunity/fix-orchestra-spec/blob/master/v1-0-STANDARD/orchestra_spec.md).
 
 Currently supported FIX Orchestra features:
 + uses the correct structure of message that correspond to specified scenario (or to the default one if it is not set)
@@ -20,6 +25,8 @@ Currently supported FIX Orchestra features:
     </fixr:message>
   </fixr:messages>
   ```
+  FIX Orchestra allows you to have different structure description for same message depending on the scenario of usage.
+  You can change the set of tags, their order, change which tags are required for with scenario.
 + validation of conditionally required fields in message based on the rules that are specified for the field in message
   ```xml
   <fixr:fieldRef id="99" added="FIX.2.7">
@@ -33,7 +40,9 @@ Currently supported FIX Orchestra features:
     </fixr:annotation>
   </fixr:fieldRef>
   ```
-  
+  In FIX Orchestra you can add conditions for field to describe cases where this field is required or must not be set at all.
+  It is done by the FIX Orchestra DSL that gives you access to the fields of current message and allows you to write conditions for field presence. 
+
 The encoding and decoding can work in two modes:
 + **strict mode** when all errors reported during validation by FIX Orchestra schema will cause decoding/encoding error and the message won't go further.
 The error event will be attached to your script if `parentEventId` is specified in the message.
