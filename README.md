@@ -1,4 +1,4 @@
-# FIX Orchestra Codec v0.0.1
+# FIX Orchestra Codec v0.1.0
 
 FIX Orchestra codec uses [th2-codec](https://github.com/th2-net/th2-codec) as a core part.
 Please, read more about core part functionality [here](https://github.com/th2-net/th2-codec/blob/master/README.md).
@@ -80,7 +80,7 @@ metadata:
   name: codec-fix-orchestra
 spec:
   image-name: ghcr.io/th2-net/th2-codec-fix-orchestra
-  image-version: 0.0.1
+  image-version: 0.1.0
   custom-config:
     codecSettings:
       defaultScenario: base
