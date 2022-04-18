@@ -58,7 +58,7 @@ dependencies {
     api platform('com.exactpro.th2:bom:3.0.0')
 
     implementation 'com.exactpro.th2:common:3.33.0'
-    implementation 'com.exactpro.th2:codec:4.6.0'
+    implementation 'com.exactpro.th2:codec:4.6.1-ts-970-custom-exception-2183871658-SNAPSHOT'
 
     implementation 'org.slf4j:slf4j-log4j12'
     implementation 'org.slf4j:slf4j-api'

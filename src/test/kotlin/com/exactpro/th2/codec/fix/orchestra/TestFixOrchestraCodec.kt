@@ -16,6 +16,7 @@
 
 package com.exactpro.th2.codec.fix.orchestra
 
+import com.exactpro.th2.codec.ValidateException
 import com.exactpro.th2.codec.api.DictionaryAlias
 import com.exactpro.th2.codec.api.IPipelineCodecContext
 import com.exactpro.th2.codec.api.impl.ReportingContext
@@ -30,14 +31,12 @@ import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.schema.dictionary.DictionaryType
 import com.exactpro.th2.common.value.toValue
 import com.google.protobuf.ByteString
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.InputStream
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -70,7 +69,6 @@ class TestFixOrchestraCodec {
     fun `decodes business message`() {
         val codec = factory.create(FixOrchestraCodecSettings())
         val message = "8=FIXT.1.1\u00019=313\u000135=8\u000134=92\u000149=FGW\u000152=20220214-12:23:36.900\u000156=DEMO-CONN2\u000111=3016560\u000114=40\u000117=156\u000122=8\u000137=54\u000138=100\u000139=C\u000140=2\u000144=34\u000148=INSTR2\u000154=2\u000158=The remaining part of simulated order has been expired\u000159=3\u000160=20220214-12:23:36.798\u0001150=C\u0001151=0\u0001528=A\u0001581=1\u0001453=3\u0001448=DEMO-CONN2\u0001447=D\u0001452=76\u0001448=0\u0001447=N\u0001452=3\u0001448=3\u0001447=N\u0001452=12\u000110=035\u0001"
-
         val result = codec.decode(
             MessageGroup.newBuilder()
                 .addMessages(
@@ -94,6 +92,29 @@ class TestFixOrchestraCodec {
             "SecurityID" to "INSTR2".toValue(),
             "SecurityIDSource" to "ExchangeSymbol".toValue()
         ))
+    }
+
+    @Test
+    fun `decodes incorrect message`() {
+        val codec = factory.create(FixOrchestraCodecSettings())
+        val message = "8=FIXT.1.1\u00019=313\u000135=8\u000134=92\u000149=FGW\u000152=20220214-12:23:36.900\u000156=DEMO-CONN2\u000111=3016560\u000114=40\u000117=156\u000122=8\u000138=100\u000139=C\u000140=2\u000144=34\u000148=INSTR2\u000154=2\u000158=The remaining part of simulated order has been expired\u000159=3\u000160=20220214-12:23:36.798\u0001150=C\u0001151=0\u0001528=A\u0001581=1\u0001453=3\u0001448=DEMO-CONN2\u0001447=D\u0001452=76\u0001448=0\u0001447=N\u0001452=3\u0001448=3\u0001447=N\u0001452=12\u000110=018\u0001"
+        val thrown = assertThrows<ValidateException> {
+            codec.decode(
+            MessageGroup.newBuilder()
+                .addMessages(
+                    AnyMessage.newBuilder()
+                        .setRawMessage(
+                            RawMessage.newBuilder()
+                                .setBody(ByteString.copyFrom(message.toByteArray(Charsets.UTF_8)))
+                        )
+                        .build()
+                )
+                .build(),
+            ReportingContext()
+        )
+        }
+
+        assertEquals("msgType {ExecutionReport}, tags {37}, scenario {base}", thrown.message)
     }
 
     @Test
