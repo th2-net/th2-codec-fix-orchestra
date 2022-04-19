@@ -105,10 +105,13 @@ public class ValidatorQfj implements Validator<Message> {
 
     private final SymbolResolver symbolResolver;
 
+    private final Cache cache;
+
     public ValidatorQfj(RepositoryAccessor repositoryAdapter, SymbolResolver symbolResolver) {
         this.repositoryAdapter = repositoryAdapter;
         this.symbolResolver = symbolResolver;
         evaluator = new Evaluator(symbolResolver, errorListener);
+        cache = new Cache(repositoryAdapter);
     }
 
     @Override
@@ -122,7 +125,7 @@ public class ValidatorQfj implements Validator<Message> {
             try (Scope local = (Scope) symbolResolver.resolve(SymbolResolver.LOCAL_ROOT)) {
                 local.nest(new PathStep(messageType.getName()), messageScope);
 
-                final List<Object> members = repositoryAdapter.getMessageMembers(messageType);
+                final List<Object> members = cache.getMessageMembers(messageType);
 
                 validateFieldMap(message, testException, members);
             }
@@ -141,8 +144,8 @@ public class ValidatorQfj implements Validator<Message> {
         final String scenario = fieldRefType.getScenario();
         final PresenceT presence = fieldRefType.getPresence();
 
-        final String dataTypeString = repositoryAdapter.getFieldDatatype(id, scenario);
-        final CodeSetType codeSet = repositoryAdapter.getCodeset(dataTypeString, scenario);
+        final String dataTypeString = cache.getFieldDatatype(id, scenario);
+        final CodeSetType codeSet = cache.getCodeset(dataTypeString, scenario);
         if (codeSet != null) {
             symbolResolver.nest(new PathStep("^"), new CodeSetScope(codeSet));
         }
@@ -180,8 +183,8 @@ public class ValidatorQfj implements Validator<Message> {
         if (isPresentInMessage) {
             try {
                 final String value = fieldMap.getString(id);
-                final String datatypeName = repositoryAdapter.getFieldDatatype(id, scenario);
-                final Datatype datatype = repositoryAdapter.getDatatype(datatypeName);
+                final String datatypeName = cache.getFieldDatatype(id, scenario);
+                final Datatype datatype = cache.getDatatype(datatypeName);
                 if (datatype == null) {
                     final List<CodeType> codeList = codeSet.getCode();
                     boolean matchesCode = false;
@@ -194,6 +197,7 @@ public class ValidatorQfj implements Validator<Message> {
                     if (!matchesCode) {
                         testException.addDetail("Invalid code in field " + id,
                                 "in codeSet " + codeSet.getName(), value);
+                        fillException(testException, id, scenario);
                     }
 
                 }
@@ -216,14 +220,14 @@ public class ValidatorQfj implements Validator<Message> {
                 validateField(fieldMap, testException, fieldRefType);
             } else if (member instanceof GroupRefType) {
                 final GroupRefType groupRefType = (GroupRefType) member;
-                final GroupType groupType = repositoryAdapter.getGroup(groupRefType);
+                final GroupType groupType = cache.getGroupType(groupRefType);
                 final List<Group> groups = fieldMap.getGroups(groupType.getNumInGroup().getId().intValue());
                 for (final Group group : groups) {
                     validateFieldMap(group, testException, groupType.getComponentRefOrGroupRefOrFieldRef());
                 }
             } else if (member instanceof ComponentRefType) {
                 final ComponentRefType componentRefType = (ComponentRefType) member;
-                final ComponentType component = repositoryAdapter.getComponent(componentRefType);
+                final ComponentType component = cache.getComponentType(componentRefType);
                 if (!component.getName().equals("StandardHeader")
                         && !component.getName().equals("StandardTrailer"))
                     validateFieldMap(fieldMap, testException,
