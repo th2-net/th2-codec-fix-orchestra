@@ -37,11 +37,11 @@ import com.exactpro.th2.common.message.toJson
 import com.google.protobuf.ByteString
 import io.fixprotocol._2020.orchestra.repository.Repository
 import io.fixprotocol.orchestra.model.SymbolResolver
-import io.fixprotocol.orchestra.model.quickfix.RepositoryAccessor
 import mu.KotlinLogging
 import org.quickfixj.CharsetSupport
 import quickfix.DataDictionary
 import quickfix.field.MsgType
+import validator.RepositoryCache
 import validator.TestExceptionImpl
 import kotlin.text.Charsets.UTF_8
 import quickfix.Message as QuickfixMessage
@@ -53,8 +53,12 @@ class FixOrchestraCodec(
 ) : IPipelineCodec {
     private val logger = KotlinLogging.logger {}
 
-    private val accessor = RepositoryAccessor(repository)
-    private val validator = ValidatorQfj(accessor, SymbolResolver())
+    private val cacheAccessor = RepositoryCache(repository,
+        settings.cacheSizeForFieldDatatype, settings.cacheSizeForCodeSetType,
+        settings.cacheSizeForGroups, settings.cacheSizeForComponents,
+        settings.cacheSizeForDatatype, settings.cacheSizeForMessageMembers
+    )
+    private val validator = ValidatorQfj(cacheAccessor, SymbolResolver())
 
     private val structuresByName = repository.loadMessageStructures(settings.inlineComponents)
     private val structuresByType = structuresByName.values.associateBy(FixMessage::type)
@@ -101,11 +105,11 @@ class FixOrchestraCodec(
 
             try {
                 val scenario = metadata.getPropertiesOrDefault(SCENARIO_PROPERTY, settings.defaultScenario)
-                val type = checkNotNull(accessor.getMessage(name, scenario)) { "No scenario $scenario for message: $name" }
+                val type = checkNotNull(cacheAccessor.getMessage(name, scenario)) { "No scenario $scenario for message: $name" }
                 validator.validate(result, type)
                 dictionary.validate(result, true)
             } catch (e: TestExceptionImpl) {
-                throw ValidateException("msgType {${e.msgType}} tags {${e.tags.joinToString()}}, scenario {${e.scenario}}", e.details)
+                throw ValidateException("msgType [${e.msgType}] tags [${e.tags.joinToString()}], scenario [${e.scenario}]", e.details)
             } catch (e: Exception) {
                 logger.error(e) { "Failed to validate encoded message" }
                 errors += "Encoded message validation error: ${e.message}"
@@ -174,10 +178,10 @@ class FixOrchestraCodec(
 
             try {
                 val scenario = metadata.getPropertiesOrDefault(SCENARIO_PROPERTY, settings.defaultScenario)
-                val type = checkNotNull(accessor.getMessage(structure.name, scenario)) { "No scenario $scenario for message: ${structure.name}" }
+                val type = checkNotNull(cacheAccessor.getMessage(structure.name, scenario)) { "No scenario $scenario for message: ${structure.name}" }
                 validator.validate(quickfixMessage, type)
             } catch (e: TestExceptionImpl) {
-                throw ValidateException("msgType {${e.msgType}}, tags {${e.tags.joinToString()}}, scenario {${e.scenario}}", e.details)
+                throw ValidateException("msgType [${e.msgType}], tags [${e.tags.joinToString()}], scenario [${e.scenario}]", e.details)
             } catch (e: Exception) {
                 logger.error(e) { "Failed to validate decoded message" }
                 errors += "Decoded message validation error: ${e.message}"

@@ -22,31 +22,36 @@ import io.fixprotocol._2020.orchestra.repository.Datatype;
 import io.fixprotocol._2020.orchestra.repository.GroupRefType;
 import io.fixprotocol._2020.orchestra.repository.GroupType;
 import io.fixprotocol._2020.orchestra.repository.MessageType;
+import io.fixprotocol._2020.orchestra.repository.Repository;
 import io.fixprotocol.orchestra.model.quickfix.RepositoryAccessor;
 import org.apache.commons.collections4.map.LRUMap;
 
 import java.util.List;
 import java.util.Objects;
 
-public class Cache {
+public class RepositoryCache extends RepositoryAccessor{
 
-    private final RepositoryAccessor repositoryAdapter;
-    private final LRUMap<GroupRefType, GroupType> groupCache = new LRUMap<>();
-    private final LRUMap<ComponentRefType, ComponentType> componentCache = new LRUMap<>();
-    private final LRUMap<BinaryKey<Integer, String>, String> fieldDataTypeCache = new LRUMap<>(500);
-    private final LRUMap<String, Datatype> datatypeCache = new LRUMap<>(50);
-    private final LRUMap<BinaryKey<String, String>, CodeSetType> codeSetTypeCache = new LRUMap<>(250);
-    private final LRUMap<MessageType, List<Object>> messageMembersCache = new LRUMap<>(50);
+    private final LRUMap<GroupRefType, GroupType> groupCache;
+    private final LRUMap<ComponentRefType, ComponentType> componentCache;
+    private final LRUMap<BinaryKey<Integer, String>, String> fieldDataTypeCache;
+    private final LRUMap<String, Datatype> datatypeCache;
+    private final LRUMap<BinaryKey<String, String>, CodeSetType> codeSetTypeCache;
+    private final LRUMap<MessageType, List<Object>> messageMembersCache;
 
-
-    public Cache(RepositoryAccessor repositoryAdapter) {
-        this.repositoryAdapter = repositoryAdapter;
+    public RepositoryCache(Repository repository, int cacheSizeForFieldDatatype, int cacheSizeForCodeSetType, int cacheSizeForGroups, int cacheSizeForComponents, int cacheSizeForDatatype, int cacheSizeForMessageMembers) {
+        super(repository);
+        fieldDataTypeCache = new LRUMap<>(cacheSizeForFieldDatatype);
+        codeSetTypeCache = new LRUMap<>(cacheSizeForCodeSetType);
+        groupCache = new LRUMap<>(cacheSizeForGroups);
+        componentCache = new LRUMap<>(cacheSizeForComponents);
+        datatypeCache = new LRUMap<>(cacheSizeForDatatype);
+        messageMembersCache = new LRUMap<>(cacheSizeForMessageMembers);
     }
 
     public List<Object> getMessageMembers(MessageType messageType){
         List<Object> members = messageMembersCache.get(messageType);
         if (members == null){
-            members = repositoryAdapter.getMessageMembers(messageType);
+            members = super.getMessageMembers(messageType);
             messageMembersCache.put(messageType, members);
         }
         return members;
@@ -56,7 +61,7 @@ public class Cache {
         BinaryKey<String,String> key = new BinaryKey<>(name, scenario);
         CodeSetType codeSetType = codeSetTypeCache.get(key);
         if (codeSetType == null) {
-            codeSetType = repositoryAdapter.getCodeset(name, scenario);
+            codeSetType = super.getCodeset(name, scenario);
             codeSetTypeCache.put(key, codeSetType);
         }
         return codeSetType;
@@ -65,7 +70,7 @@ public class Cache {
     public Datatype getDatatype(String datatypeName) {
         Datatype datatype = datatypeCache.get(datatypeName);
         if (datatype == null) {
-            datatype = repositoryAdapter.getDatatype(datatypeName);
+            datatype = super.getDatatype(datatypeName);
             datatypeCache.put(datatypeName, datatype);
         }
         return datatype;
@@ -75,7 +80,7 @@ public class Cache {
         BinaryKey<Integer, String> key = new BinaryKey<>(id, scenario);
         String fieldDataType = fieldDataTypeCache.get(key);
         if (fieldDataType == null) {
-            fieldDataType = repositoryAdapter.getFieldDatatype(id, scenario);
+            fieldDataType = super.getFieldDatatype(id, scenario);
             fieldDataTypeCache.put(key, fieldDataType);
         }
         return fieldDataType;
@@ -84,7 +89,7 @@ public class Cache {
     public GroupType getGroupType(GroupRefType groupRefType) {
         GroupType groupType = groupCache.get(groupRefType);
         if (groupType == null) {
-            groupType = repositoryAdapter.getGroup(groupRefType);
+            groupType = super.getGroup(groupRefType);
             groupCache.put(groupRefType, groupType);
         }
         return groupType;
@@ -93,7 +98,7 @@ public class Cache {
     public ComponentType getComponentType(ComponentRefType componentRefType) {
         ComponentType componentType = componentCache.get(componentRefType);
         if (componentType == null) {
-            componentType = repositoryAdapter.getComponent(componentRefType);
+            componentType = super.getComponent(componentRefType);
             componentCache.put(componentRefType, componentType);
         }
         return componentType;

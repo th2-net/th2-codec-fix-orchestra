@@ -36,7 +36,6 @@ import io.fixprotocol.orchestra.model.PathStep;
 import io.fixprotocol.orchestra.model.Scope;
 import io.fixprotocol.orchestra.model.SymbolResolver;
 import io.fixprotocol.orchestra.model.quickfix.MessageScope;
-import io.fixprotocol.orchestra.model.quickfix.RepositoryAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import quickfix.FieldMap;
@@ -101,26 +100,22 @@ public class ValidatorQfj implements Validator<Message> {
         }
     };
 
-    private final RepositoryAccessor repositoryAdapter;
-
     private final SymbolResolver symbolResolver;
 
-    private final Cache cache;
+    private final RepositoryCache cache;
 
-    public ValidatorQfj(RepositoryAccessor repositoryAdapter, SymbolResolver symbolResolver) {
-        this.repositoryAdapter = repositoryAdapter;
+    public ValidatorQfj(RepositoryCache cache, SymbolResolver symbolResolver) {
         this.symbolResolver = symbolResolver;
         evaluator = new Evaluator(symbolResolver, errorListener);
-        cache = new Cache(repositoryAdapter);
+        this.cache = cache;
     }
 
     @Override
     public void validate(Message message, MessageType messageType) throws TestExceptionImpl {
         final TestExceptionImpl testException =
-                new TestExceptionImpl("Invalid message type " + messageType.getName());
-        testException.setMsgType(messageType.getName());
+                new TestExceptionImpl(messageType.getName());
         try (final MessageScope messageScope =
-                     new MessageScope(message, messageType, repositoryAdapter, symbolResolver, evaluator)) {
+                     new MessageScope(message, messageType, cache, symbolResolver, evaluator)) {
             symbolResolver.nest(new PathStep("in."), messageScope);
             try (Scope local = (Scope) symbolResolver.resolve(SymbolResolver.LOCAL_ROOT)) {
                 local.nest(new PathStep(messageType.getName()), messageScope);
@@ -235,9 +230,4 @@ public class ValidatorQfj implements Validator<Message> {
             }
         }
     }
-
-    MessageType getMessage(String name) {
-        return repositoryAdapter.getMessage(name, "base");
-    }
-
 }

@@ -114,7 +114,7 @@ class TestFixOrchestraCodec {
         )
         }
 
-        assertEquals("msgType {ExecutionReport}, tags {37}, scenario {base}", thrown.message)
+        assertEquals("msgType [ExecutionReport], tags [37], scenario [base]", thrown.message)
     }
 
     @Test

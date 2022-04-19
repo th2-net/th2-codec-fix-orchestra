@@ -22,20 +22,17 @@ import java.util.List;
 
 public class TestExceptionImpl extends TestException {
 
-    private String msgType;
-    private List<Integer> tags = new ArrayList<>();
+    private final String msgType;
+    private final List<Integer> tags = new ArrayList<>();
     private String scenario;
 
-    public TestExceptionImpl(String message) {
-        super(message);
+    public TestExceptionImpl(String msgType) {
+        super("Invalid message type " + msgType);
+        this.msgType = msgType;
     }
 
     public String getMsgType() {
         return msgType;
-    }
-
-    public void setMsgType(String msgType) {
-        this.msgType = msgType;
     }
 
     public String getScenario() {
@@ -48,9 +45,5 @@ public class TestExceptionImpl extends TestException {
 
     public List<Integer> getTags() {
         return tags;
-    }
-
-    public void setTags(List<Integer> tags) {
-        this.tags = tags;
     }
 }

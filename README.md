@@ -1,4 +1,4 @@
-# FIX Orchestra Codec v0.1.0
+# FIX Orchestra Codec v0.1.1
 
 FIX Orchestra codec uses [th2-codec](https://github.com/th2-net/th2-codec) as a core part.
 Please, read more about core part functionality [here](https://github.com/th2-net/th2-codec/blob/master/README.md).
@@ -62,6 +62,12 @@ The list of common parameters and the general format for the configuration you c
 + **decodeErrorAsWaring** - message validation errors during decoding will be reported as warnings (`false` by default)
 + **inlineComponents** - if `true` the _component_ blocks in the message will be added as flatten fields.
   Otherwise, the sub-message with component's name will be created and all component fields will be added to that sub-messages (`false` by default) 
++ **cacheSizeForFieldDatatype** - cache size for the most commonly used _FieldDatatype_ (`500` by default)
++ **cacheSizeForCodeSetType** -  cache size for the most commonly used _CodeSetType_ (`250` by default)
++ **cacheSizeForGroups** -  cache size for the most commonly used _Groups_ (`100` by default)
++ **cacheSizeForComponents** -  cache size for the most commonly used _Components_ (`100` by default)
++ **cacheSizeForMessageMembers** -  cache size for the most commonly used _MessageMembers_ (`100` by default)
++ **cacheSizeForDatatype** -  cache size for the most commonly used _Datatype_ (`50` by default)
 
 ## Protocol
 
@@ -134,3 +140,16 @@ spec:
     service:
       enabled: false
 ```
+
+
+## Changelog
+
+### v0.1.1
+
+#### Changed:
+
+* Exceptions and error events were made more readable (now they contain msgType, tags and scenario of the error message)
+
+#### Added:
+
+* Caching of properties (such as Groups, components etc.)
