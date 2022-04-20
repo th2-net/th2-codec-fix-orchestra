@@ -31,7 +31,11 @@ import com.exactpro.th2.common.message.messageType
 import com.exactpro.th2.common.schema.dictionary.DictionaryType
 import com.exactpro.th2.common.value.toValue
 import com.google.protobuf.ByteString
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.function.Executable
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource

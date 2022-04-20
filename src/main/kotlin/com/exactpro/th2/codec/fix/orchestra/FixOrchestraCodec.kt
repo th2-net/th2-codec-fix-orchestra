@@ -53,11 +53,7 @@ class FixOrchestraCodec(
 ) : IPipelineCodec {
     private val logger = KotlinLogging.logger {}
 
-    private val cacheAccessor = RepositoryCache(repository,
-        settings.cacheSizeForFieldDatatype, settings.cacheSizeForCodeSetType,
-        settings.cacheSizeForGroups, settings.cacheSizeForComponents,
-        settings.cacheSizeForDatatype, settings.cacheSizeForMessageMembers
-    )
+    private val cacheAccessor = RepositoryCache(repository, settings.cacheSize)
     private val validator = ValidatorQfj(cacheAccessor, SymbolResolver())
 
     private val structuresByName = repository.loadMessageStructures(settings.inlineComponents)

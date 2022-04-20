@@ -29,7 +29,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import java.util.List;
 import java.util.Objects;
 
-public class RepositoryCache extends RepositoryAccessor{
+public class RepositoryCache extends RepositoryAccessor {
 
     private final LRUMap<GroupRefType, GroupType> groupCache;
     private final LRUMap<ComponentRefType, ComponentType> componentCache;
@@ -38,70 +38,38 @@ public class RepositoryCache extends RepositoryAccessor{
     private final LRUMap<BinaryKey<String, String>, CodeSetType> codeSetTypeCache;
     private final LRUMap<MessageType, List<Object>> messageMembersCache;
 
-    public RepositoryCache(Repository repository, int cacheSizeForFieldDatatype, int cacheSizeForCodeSetType, int cacheSizeForGroups, int cacheSizeForComponents, int cacheSizeForDatatype, int cacheSizeForMessageMembers) {
+    public RepositoryCache(Repository repository, int cacheSize) {
         super(repository);
-        fieldDataTypeCache = new LRUMap<>(cacheSizeForFieldDatatype);
-        codeSetTypeCache = new LRUMap<>(cacheSizeForCodeSetType);
-        groupCache = new LRUMap<>(cacheSizeForGroups);
-        componentCache = new LRUMap<>(cacheSizeForComponents);
-        datatypeCache = new LRUMap<>(cacheSizeForDatatype);
-        messageMembersCache = new LRUMap<>(cacheSizeForMessageMembers);
+        fieldDataTypeCache = new LRUMap<>(cacheSize);
+        codeSetTypeCache = new LRUMap<>(cacheSize);
+        groupCache = new LRUMap<>(cacheSize);
+        componentCache = new LRUMap<>(cacheSize);
+        datatypeCache = new LRUMap<>(cacheSize);
+        messageMembersCache = new LRUMap<>(cacheSize);
     }
 
-    public List<Object> getMessageMembers(MessageType messageType){
-        List<Object> members = messageMembersCache.get(messageType);
-        if (members == null){
-            members = super.getMessageMembers(messageType);
-            messageMembersCache.put(messageType, members);
-        }
-        return members;
+    public List<Object> getMessageMembers(MessageType messageType) {
+        return messageMembersCache.computeIfAbsent(messageType, super::getMessageMembers);
     }
 
     public CodeSetType getCodeset(String name, String scenario) {
-        BinaryKey<String,String> key = new BinaryKey<>(name, scenario);
-        CodeSetType codeSetType = codeSetTypeCache.get(key);
-        if (codeSetType == null) {
-            codeSetType = super.getCodeset(name, scenario);
-            codeSetTypeCache.put(key, codeSetType);
-        }
-        return codeSetType;
+        return codeSetTypeCache.computeIfAbsent(new BinaryKey<>(name, scenario), k -> super.getCodeset(k.first, k.second));
     }
 
     public Datatype getDatatype(String datatypeName) {
-        Datatype datatype = datatypeCache.get(datatypeName);
-        if (datatype == null) {
-            datatype = super.getDatatype(datatypeName);
-            datatypeCache.put(datatypeName, datatype);
-        }
-        return datatype;
+        return datatypeCache.computeIfAbsent(datatypeName, super::getDatatype);
     }
 
     public String getFieldDatatype(int id, String scenario) {
-        BinaryKey<Integer, String> key = new BinaryKey<>(id, scenario);
-        String fieldDataType = fieldDataTypeCache.get(key);
-        if (fieldDataType == null) {
-            fieldDataType = super.getFieldDatatype(id, scenario);
-            fieldDataTypeCache.put(key, fieldDataType);
-        }
-        return fieldDataType;
+        return fieldDataTypeCache.computeIfAbsent(new BinaryKey<>(id, scenario), k -> super.getFieldDatatype(k.first, k.second));
     }
 
     public GroupType getGroupType(GroupRefType groupRefType) {
-        GroupType groupType = groupCache.get(groupRefType);
-        if (groupType == null) {
-            groupType = super.getGroup(groupRefType);
-            groupCache.put(groupRefType, groupType);
-        }
-        return groupType;
+        return groupCache.computeIfAbsent(groupRefType, super::getGroup);
     }
 
     public ComponentType getComponentType(ComponentRefType componentRefType) {
-        ComponentType componentType = componentCache.get(componentRefType);
-        if (componentType == null) {
-            componentType = super.getComponent(componentRefType);
-            componentCache.put(componentRefType, componentType);
-        }
-        return componentType;
+        return componentCache.computeIfAbsent(componentRefType, super::getComponent);
     }
 
 
@@ -116,8 +84,8 @@ public class RepositoryCache extends RepositoryAccessor{
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof BinaryKey<?,?>)) return false;
-            BinaryKey<?,?> key = (BinaryKey<?,?>) o;
+            if (!(o instanceof BinaryKey<?, ?>)) return false;
+            BinaryKey<?, ?> key = (BinaryKey<?, ?>) o;
             if (!key.first.equals(first)) return false;
             return key.second.equals(second);
         }

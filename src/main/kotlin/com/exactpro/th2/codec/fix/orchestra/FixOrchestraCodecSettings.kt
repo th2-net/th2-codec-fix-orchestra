@@ -23,10 +23,5 @@ data class FixOrchestraCodecSettings(
     val encodeErrorAsWaring: Boolean = false,
     val decodeErrorAsWaring: Boolean = false,
     val inlineComponents: Boolean = false,
-    val cacheSizeForFieldDatatype: Int = 500,
-    val cacheSizeForCodeSetType: Int = 250,
-    val cacheSizeForGroups: Int = 100,
-    val cacheSizeForComponents: Int = 100,
-    val cacheSizeForMessageMembers: Int = 100,
-    val cacheSizeForDatatype: Int = 50,
+    val cacheSize: Int = 500,
 ) : IPipelineCodecSettings
