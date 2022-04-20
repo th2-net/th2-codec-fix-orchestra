@@ -58,7 +58,7 @@ dependencies {
     api platform('com.exactpro.th2:bom:3.0.0')
 
     implementation 'com.exactpro.th2:common:3.33.0'
-    implementation 'com.exactpro.th2:codec:4.6.0'
+    implementation 'com.exactpro.th2:codec:4.7.0'
 
     implementation 'org.slf4j:slf4j-log4j12'
     implementation 'org.slf4j:slf4j-api'
@@ -72,6 +72,7 @@ dependencies {
     implementation group: 'com.sun.xml.bind', name: 'jaxb-impl', version: '2.3.1'
     implementation group: 'javax.activation', name: 'activation', version: '1.1.1'
     implementation group: 'com.sun.istack', name: 'istack-commons-runtime', version: '4.0.1'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
 
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit5', version: kotlin_version
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
