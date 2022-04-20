@@ -12,7 +12,7 @@
  * the License.
  *
  */
-package validator;
+package com.exactpro.th2.codec.fix.orchestra.validator;
 
 import io.fixprotocol._2020.orchestra.repository.CodeSetType;
 import io.fixprotocol._2020.orchestra.repository.CodeType;

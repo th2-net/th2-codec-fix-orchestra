@@ -26,7 +26,7 @@ import com.exactpro.th2.codec.fix.orchestra.util.decode
 import com.exactpro.th2.codec.fix.orchestra.util.details
 import com.exactpro.th2.codec.fix.orchestra.util.encode
 import com.exactpro.th2.codec.fix.orchestra.util.loadMessageStructures
-import validator.ValidatorQfj
+import com.exactpro.th2.codec.fix.orchestra.validator.ValidatorQfj
 import com.exactpro.th2.common.grpc.Direction
 import com.exactpro.th2.common.grpc.MessageGroup
 import com.exactpro.th2.common.grpc.RawMessage
@@ -41,8 +41,8 @@ import mu.KotlinLogging
 import org.quickfixj.CharsetSupport
 import quickfix.DataDictionary
 import quickfix.field.MsgType
-import validator.RepositoryCache
-import validator.TestExceptionImpl
+import com.exactpro.th2.codec.fix.orchestra.validator.RepositoryCache
+import com.exactpro.th2.codec.fix.orchestra.validator.TestExceptionImpl
 import kotlin.text.Charsets.UTF_8
 import quickfix.Message as QuickfixMessage
 
