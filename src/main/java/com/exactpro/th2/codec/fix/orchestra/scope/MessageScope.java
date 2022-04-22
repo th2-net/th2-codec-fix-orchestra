@@ -30,7 +30,7 @@ import quickfix.Message;
 
 import java.util.List;
 
-public class MessageScopeTh2 extends AbstractMessageScopeTh2 implements Scope {
+public class MessageScope extends AbstractMessageScope implements Scope {
 
 
     private final MessageType messageType;
@@ -45,8 +45,8 @@ public class MessageScopeTh2 extends AbstractMessageScopeTh2 implements Scope {
      * @param symbolResolver used by DSL to resolve symbols
      * @param evaluator      evalutes DSL expressions
      */
-    public MessageScopeTh2(Message message, MessageType messageType, RepositoryAccessor repository,
-                           SymbolResolver symbolResolver, Evaluator evaluator) {
+    public MessageScope(Message message, MessageType messageType, RepositoryAccessor repository,
+                        SymbolResolver symbolResolver, Evaluator evaluator) {
         super(message, repository, symbolResolver, evaluator);
         this.messageType = messageType;
     }

@@ -43,16 +43,16 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-abstract class AbstractMessageScopeTh2 {
+abstract class AbstractMessageScope {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMessageScopeTh2.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMessageScope.class);
 
     private final Evaluator evaluator;
     private final FieldMap fieldMap;
     private final RepositoryAccessor repository;
     private final SymbolResolver symbolResolver;
 
-    protected AbstractMessageScopeTh2(FieldMap fieldMap, RepositoryAccessor repository,
+    protected AbstractMessageScope(FieldMap fieldMap, RepositoryAccessor repository,
                                    SymbolResolver symbolResolver, Evaluator evaluator) {
         this.fieldMap = fieldMap;
         this.repository = repository;
@@ -241,12 +241,12 @@ abstract class AbstractMessageScopeTh2 {
             } catch (final FieldNotFound e) {
                 return null;
             }
-            return new GroupInstanceScopeTh2(group, groupType, repository, symbolResolver, evaluator);
+            return new GroupInstanceScope(group, groupType, repository, symbolResolver, evaluator);
         } else if (predicate != null) {
             final List<Group> groups = fieldMap.getGroups(groupType.getNumInGroup().getId().intValue());
             for (final Group group : groups) {
-                final GroupInstanceScopeTh2 scope =
-                        new GroupInstanceScopeTh2(group, groupType, repository, symbolResolver, evaluator);
+                final GroupInstanceScope scope =
+                        new GroupInstanceScope(group, groupType, repository, symbolResolver, evaluator);
                 final Scope local = (Scope) symbolResolver.resolve(SymbolResolver.LOCAL_ROOT);
                 local.nest(new PathStep(groupType.getName()), scope);
                 FixValue<?> fixValue;

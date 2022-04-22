@@ -14,7 +14,7 @@
  */
 package com.exactpro.th2.codec.fix.orchestra.validator;
 
-import com.exactpro.th2.codec.fix.orchestra.scope.MessageScopeTh2;
+import com.exactpro.th2.codec.fix.orchestra.scope.MessageScope;
 import io.fixprotocol._2020.orchestra.repository.CodeSetType;
 import io.fixprotocol._2020.orchestra.repository.CodeType;
 import io.fixprotocol._2020.orchestra.repository.ComponentRefType;
@@ -113,8 +113,8 @@ public class ValidatorQfj implements Validator<Message> {
     public void validate(Message message, MessageType messageType) throws TestExceptionImpl {
         final TestExceptionImpl testException =
                 new TestExceptionImpl(messageType.getName());
-        try (final MessageScopeTh2 messageScope =
-                     new MessageScopeTh2(message, messageType, cache, symbolResolver, evaluator)) {
+        try (final MessageScope messageScope =
+                     new MessageScope(message, messageType, cache, symbolResolver, evaluator)) {
             symbolResolver.nest(new PathStep("in."), messageScope);
             try (Scope local = (Scope) symbolResolver.resolve(SymbolResolver.LOCAL_ROOT)) {
                 local.nest(new PathStep(messageType.getName()), messageScope);

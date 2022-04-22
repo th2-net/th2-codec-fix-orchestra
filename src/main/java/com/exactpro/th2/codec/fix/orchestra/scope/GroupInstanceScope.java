@@ -20,7 +20,6 @@ import io.fixprotocol._2020.orchestra.repository.GroupType;
 import io.fixprotocol.orchestra.dsl.antlr.Evaluator;
 import io.fixprotocol.orchestra.model.FixNode;
 import io.fixprotocol.orchestra.model.FixValue;
-import io.fixprotocol.orchestra.model.ModelException;
 import io.fixprotocol.orchestra.model.PathStep;
 import io.fixprotocol.orchestra.model.Scope;
 import io.fixprotocol.orchestra.model.SymbolResolver;
@@ -29,13 +28,13 @@ import quickfix.Group;
 
 import java.util.List;
 
-public class GroupInstanceScopeTh2 extends AbstractMessageScopeTh2 implements Scope {
+public class GroupInstanceScope extends AbstractMessageScope implements Scope {
 
     private final GroupType groupType;
     private Scope parent;
 
-    public GroupInstanceScopeTh2(Group group, GroupType groupType, RepositoryAccessor repository,
-                                 SymbolResolver symbolResolver, Evaluator evaluator) {
+    public GroupInstanceScope(Group group, GroupType groupType, RepositoryAccessor repository,
+                              SymbolResolver symbolResolver, Evaluator evaluator) {
         super(group, repository, symbolResolver, evaluator);
         this.groupType = groupType;
     }
