@@ -143,7 +143,7 @@ spec:
 
 #### Fixed:
 
-* Attribute `presence="optional"` (optional tags were not checked correctly)
+* Non-existent fields (messageScope returns fields, even if the message do not contain these fields, instead of returning null)
 
 ### v0.2.0
 
