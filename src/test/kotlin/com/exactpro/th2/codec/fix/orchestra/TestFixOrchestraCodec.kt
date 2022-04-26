@@ -99,25 +99,27 @@ class TestFixOrchestraCodec {
     }
 
     @Test
-    fun `decodes order cancel request message `() { //rule OrigClOrdIDnotrequiredwhenOrderIDexists [!exists OrderID]
+    fun `decodes incorrect order cancel request message `() { //rule OrigClOrdIDnotrequiredwhenOrderIDexists [!exists OrderID]
         val codec = factory.create(FixOrchestraCodecSettings())
-        val message = "8=FIX.4.4\u00019=136\u000135=F\u000134=4\u000149=FIXTESTA\u000152=20220419-13:10:13.518\u000156=MONTRANTS\u000111=1650373817746\u000137=1111\u000138=500\u000154=1\u000155=GEB\u000160=20220419-13:10:13.518\u00011300=GelOEquiM\u000110=162\u0001"
-        val result = codec.decode(
-            MessageGroup.newBuilder()
-                .addMessages(
-                    AnyMessage.newBuilder()
-                        .setRawMessage(
-                            RawMessage.newBuilder()
-                                .setBody(ByteString.copyFrom(message.toByteArray(Charsets.UTF_8)))
-                        )
-                        .build()
-                )
-                .build(),
-            ReportingContext()
-        )
-        val anyMessage = result.messagesList.single()
-        val parsedMessage = anyMessage.message
-        Assertions.assertEquals("OrderCancelRequest", parsedMessage.messageType)
+        val message = "8=FIX.4.4\u00019=136\u000135=F\u000134=4\u000149=FIXTESTA\u000152=20220419-13:10:13.518\u000156=MONTRANTS\u000111=1650373817746\u000138=500\u000154=1\u000155=GEB\u000160=20220419-13:10:13.518\u00011300=GelOEquiM\u000110=054\u0001"
+
+        val thrown = assertThrows<ValidateException> {
+            codec.decode(
+                MessageGroup.newBuilder()
+                    .addMessages(
+                        AnyMessage.newBuilder()
+                            .setRawMessage(
+                                RawMessage.newBuilder()
+                                    .setBody(ByteString.copyFrom(message.toByteArray(Charsets.UTF_8)))
+                            )
+                            .build()
+                    )
+                    .build(),
+                ReportingContext()
+            )
+        }
+        assertEquals("msgType [OrderCancelRequest], tags [41], scenario [base]", thrown.message)
+        assertEquals("[Missing required field 41, expected=REQUIRED, actual=(not present)]", thrown.details.toString())
     }
 
     @Test
