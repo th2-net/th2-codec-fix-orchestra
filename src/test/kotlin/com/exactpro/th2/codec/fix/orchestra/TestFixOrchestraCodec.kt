@@ -119,7 +119,7 @@ class TestFixOrchestraCodec {
             )
         }
         assertEquals("msgType [OrderCancelRequest], tags [41], scenario [base]", thrown.message)
-        assertEquals("[Missing required field 41, expected=REQUIRED, actual=(not present)]", thrown.details.toString())
+        assertEquals(listOf("Missing required field 41, expected=REQUIRED, actual=(not present)"), thrown.details)
     }
 
     @Test

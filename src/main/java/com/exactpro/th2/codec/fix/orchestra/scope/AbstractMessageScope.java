@@ -214,15 +214,15 @@ abstract class AbstractMessageScope {
         } catch (final FieldNotFound e) {
             // Set default value if field is not present
             final String defaultValue = fieldRefType.getValue();
-            if (defaultValue != null) {
-                final Class<?> valueClass = dataType.getValueClass();
-                try {
-                    fixValue = FixValueFactory.create(null, dataType, valueClass);
-                    fixValue.setValue(valueClass.cast(dataType.fromString(defaultValue)));
-                } catch (final ModelException e1) {
-                    LOGGER.error("Failed to create fix type", e1);
-                }
-            } else {
+            if (defaultValue == null) {
+                return null;
+            }
+            final Class<?> valueClass = dataType.getValueClass();
+            try {
+                fixValue = FixValueFactory.create(null, dataType, valueClass);
+                fixValue.setValue(valueClass.cast(dataType.fromString(defaultValue)));
+            } catch (final ModelException e1) {
+                LOGGER.error("Failed to create fix type", e1);
                 return null;
             }
         }
@@ -260,8 +260,9 @@ abstract class AbstractMessageScope {
                 }
             }
             return null;
-        } else
+        } else {
             return null;
+        }
     }
 
 

@@ -143,7 +143,7 @@ spec:
 
 #### Fixed:
 
-* Non-existent fields (messageScope returns fields, even if the message do not contain these fields, instead of returning null)
+* Non-existent fields (`messageScope` returns a field, even if the message does not contain this field, instead of returning null)
 
 ### v0.2.0
 
