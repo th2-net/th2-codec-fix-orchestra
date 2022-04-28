@@ -14,6 +14,7 @@
  */
 package com.exactpro.th2.codec.fix.orchestra.validator;
 
+import com.exactpro.th2.codec.fix.orchestra.scope.MessageScope;
 import io.fixprotocol._2020.orchestra.repository.CodeSetType;
 import io.fixprotocol._2020.orchestra.repository.CodeType;
 import io.fixprotocol._2020.orchestra.repository.ComponentRefType;
@@ -34,7 +35,6 @@ import io.fixprotocol.orchestra.model.FixValue;
 import io.fixprotocol.orchestra.model.PathStep;
 import io.fixprotocol.orchestra.model.Scope;
 import io.fixprotocol.orchestra.model.SymbolResolver;
-import io.fixprotocol.orchestra.model.quickfix.MessageScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import quickfix.FieldMap;

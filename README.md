@@ -1,4 +1,4 @@
-# FIX Orchestra Codec v0.2.0
+# FIX Orchestra Codec v0.2.1
 
 FIX Orchestra codec uses [th2-codec](https://github.com/th2-net/th2-codec) as a core part.
 Please, read more about core part functionality [here](https://github.com/th2-net/th2-codec/blob/master/README.md).
@@ -138,6 +138,12 @@ spec:
 
 
 ## Changelog
+
+### v0.2.1
+
+#### Fixed:
+
+* Non-existent fields (`messageScope` returns a field, even if the message does not contain this field, instead of returning null)
 
 ### v0.2.0
 

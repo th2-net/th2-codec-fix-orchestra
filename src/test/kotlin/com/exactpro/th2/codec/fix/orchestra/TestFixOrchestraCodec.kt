@@ -99,6 +99,30 @@ class TestFixOrchestraCodec {
     }
 
     @Test
+    fun `decodes incorrect order cancel request message `() { //rule OrigClOrdIDnotrequiredwhenOrderIDexists [!exists OrderID]
+        val codec = factory.create(FixOrchestraCodecSettings())
+        val message = "8=FIX.4.4\u00019=136\u000135=F\u000134=4\u000149=FIXTESTA\u000152=20220419-13:10:13.518\u000156=MONTRANTS\u000111=1650373817746\u000138=500\u000154=1\u000155=GEB\u000160=20220419-13:10:13.518\u00011300=GelOEquiM\u000110=054\u0001"
+
+        val thrown = assertThrows<ValidateException> {
+            codec.decode(
+                MessageGroup.newBuilder()
+                    .addMessages(
+                        AnyMessage.newBuilder()
+                            .setRawMessage(
+                                RawMessage.newBuilder()
+                                    .setBody(ByteString.copyFrom(message.toByteArray(Charsets.UTF_8)))
+                            )
+                            .build()
+                    )
+                    .build(),
+                ReportingContext()
+            )
+        }
+        assertEquals("msgType [OrderCancelRequest], tags [41], scenario [base]", thrown.message)
+        assertEquals(listOf("Missing required field 41, expected=REQUIRED, actual=(not present)"), thrown.details)
+    }
+
+    @Test
     fun `decodes incorrect message`() {
         val codec = factory.create(FixOrchestraCodecSettings())
         val message = "8=FIXT.1.1\u00019=313\u000135=8\u000134=92\u000149=FGW\u000152=20220214-12:23:36.900\u000156=DEMO-CONN2\u000111=3016560\u000114=40\u000117=156\u000122=8\u000138=100\u000139=C\u000140=2\u000144=34\u000148=INSTR2\u000154=2\u000158=The remaining part of simulated order has been expired\u000159=3\u000160=20220214-12:23:36.798\u0001150=C\u0001151=0\u0001528=A\u0001581=1\u0001453=3\u0001448=DEMO-CONN2\u0001447=D\u0001452=76\u0001448=0\u0001447=N\u0001452=3\u0001448=3\u0001447=N\u0001452=12\u000110=018\u0001"
