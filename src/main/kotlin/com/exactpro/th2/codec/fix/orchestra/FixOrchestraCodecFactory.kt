@@ -21,12 +21,14 @@ import com.exactpro.th2.codec.api.IPipelineCodecFactory
 import com.exactpro.th2.codec.api.IPipelineCodecSettings
 import com.exactpro.th2.codec.fix.orchestra.util.loadRepository
 import com.exactpro.th2.common.schema.dictionary.DictionaryType
+import com.google.auto.service.AutoService
 import io.fixprotocol._2020.orchestra.repository.Repository
 import mu.KotlinLogging
 import quickfix.DataDictionary
 import java.io.File
 import java.nio.file.Files
 
+@AutoService(IPipelineCodecFactory::class)
 class FixOrchestraCodecFactory : IPipelineCodecFactory {
     private lateinit var qfjDictionaryPath: File
     private lateinit var dictionary: DataDictionary
