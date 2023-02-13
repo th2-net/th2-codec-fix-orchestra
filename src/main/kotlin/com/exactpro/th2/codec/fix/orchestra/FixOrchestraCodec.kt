@@ -121,7 +121,6 @@ class FixOrchestraCodec(
                 metadataBuilder.apply {
                     putAllProperties(metadata.propertiesMap)
                     this.id = metadata.id
-                    this.timestamp = metadata.timestamp
                     this.protocol = PROTOCOL
                 }
             }
@@ -194,7 +193,6 @@ class FixOrchestraCodec(
                 metadataBuilder.apply {
                     putAllProperties(metadata.propertiesMap)
                     this.id = metadata.id
-                    this.timestamp = metadata.timestamp
                     this.protocol = PROTOCOL
                 }
             }
